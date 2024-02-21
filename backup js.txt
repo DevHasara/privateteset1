@@ -1,0 +1,89 @@
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+const PORT = 3000;
+
+// Middleware to enable CORS
+app.use(cors());
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+let xuiToken = null; // Variable to store the x-ui authentication token
+
+// Route to handle the generateConfig request from the front-end
+app.post('/generateConfig', async (req, res) => {
+    try {
+        // Dynamically import node-fetch
+        const fetch = (await import('node-fetch')).default;
+
+        // Authenticate user on the x-ui panel
+        const authResponse = await fetch('https://atc.oneshieldstore.shop:2053/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: req.body.username,
+                password: req.body.password
+            })
+        });
+
+        if (!authResponse.ok) {
+            throw new Error('Failed to authenticate');
+        }
+
+        const authData = await authResponse.json();
+        const token = authData.token;
+
+        // Generate UUID and Email dynamically
+        const uuid = generateUUID();
+        const email = `Client-${uuid}`;
+
+        // Configure headers and body for adding a client
+        const myHeaders = new Headers();
+        myHeaders.append("Accept", "application/json");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Cookie", "session=MTcwODQ5MTIwOXxEWDhFQVFMX2dBQUJFQUVRQUFCMV80QUFBUVp6ZEhKcGJtY01EQUFLVEU5SFNVNWZWVk5GVWhoNExYVnBMMlJoZEdGaVlYTmxMMjF2WkdWc0xsVnpaWExfZ1FNQkFRUlZjMlZ5QWYtQ0FBRUVBUUpKWkFFRUFBRUlWWE5sY201aGJXVUJEQUFCQ0ZCaGMzTjNiM0prQVF3QUFRdE1iMmRwYmxObFkzSmxkQUVNQUFBQUZ2LUNFd0VDQVFab1lYTmhjbUVCQm1oaGMyRnlZUUE9fAWPBeQoDrLKnuOwVjMSu5S6cfbDvCC2051rhsl5Nrne");
+
+        const raw = JSON.stringify({
+            "id": 1,
+            "settings": `{"clients":[{"id":"${uuid}","alterId":0,"email":"${email}","limitIp":2,"totalGB":5368709120,"expiryTime":1682864675944,"enable":true,"tgId":"","subId":""}]}` // Dynamically insert UUID and Email
+        });
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        };
+
+        // Generate V2Ray config by adding a client on the x-ui panel
+        const generateResponse = await fetch("https://atc.oneshieldstore.shop:2053/panel/api/inbounds/addClient", requestOptions);
+        const generateData = await generateResponse.json();
+
+        console.log('Response from x-ui panel:', generateData); // Log the response data
+
+        // Construct final V2Ray config URL with dynamic UUID and Email
+        const v2rayConfigURL = `vless://${uuid}@atc.oneshieldstore.shop:80?type=ws&path=%2F&security=none#${email}`;
+        res.json({ config: v2rayConfigURL });
+    } catch (error) {
+        console.error('Error:', error.message); // Log the error message
+        res.status(500).json({ message: 'Failed to generate V2Ray config. Please try again later.' });
+    }
+});
+
+// Function to generate UUID
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
