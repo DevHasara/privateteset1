@@ -39,7 +39,7 @@ app.post('/generateConfig', async (req, res) => {
         }
 
         // Check if the IP has exceeded the daily quota
-        if (configCounts[ip].count >= 1) {
+        if (configCounts[ip].count >= 2) {
             return res.status(403).json({ message: 'You have already generated a configuration today.' });
         }
 
