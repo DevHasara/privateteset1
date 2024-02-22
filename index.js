@@ -83,8 +83,8 @@ app.post('/generateConfig', async (req, res) => {
 
         const raw = JSON.stringify({
             "id": 2,
-            "settings": "{"clients":[{"id":"${uuid}","alterId":0,"email":"${email}","limitIp":2,"totalGB":5368709120,"expiryTime":${expiryDate},"enable":true,"tgId":"","subId":""}]}` // Dynamically insert UUID, Email, and Expiry Time
-        });"
+            "settings": '{"clients":[{"id":"${uuid}","alterId":0,"email":"${email}","limitIp":2,"totalGB":5368709120,"expiryTime":${expiryDate},"enable":true,"tgId":"","subId":""}]}` // Dynamically insert UUID, Email, and Expiry Time
+        });
 
         const requestOptions = {
             method: "POST",
