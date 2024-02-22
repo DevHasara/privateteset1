@@ -50,7 +50,7 @@ app.post('/generateConfig', async (req, res) => {
         const fetch = (await import('node-fetch')).default;
 
         // Authenticate user on the x-ui panel
-        const authResponse = await fetch('https://atc.oneshieldstore.shop:2053/login', {
+        const authResponse = await fetch('http://165.22.245.179:2053/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ app.post('/generateConfig', async (req, res) => {
         myHeaders.append("Cookie", "session=MTcwODQ5MTIwOXxEWDhFQVFMX2dBQUJFQUVRQUFCMV80QUFBUVp6ZEhKcGJtY01EQUFLVEU5SFNVNWZWVk5GVWhoNExYVnBMMlJoZEdGaVlYTmxMMjF2WkdWc0xsVnpaWExfZ1FNQkFRUlZjMlZ5QWYtQ0FBRUVBUUpKWkFFRUFBRUlWWE5sY201aGJXVUJEQUFCQ0ZCaGMzTjNiM0prQVF3QUFRdE1iMmRwYmxObFkzSmxkQUVNQUFBQUZ2LUNFd0VDQVFab1lYTmhjbUVCQm1oaGMyRnlZUUE9fAWPBeQoDrLKnuOwVjMSu5S6cfbDvCC2051rhsl5Nrne");
 
         const raw = JSON.stringify({
-            "id": 1,
+            "id": 2,
             "settings": `{"clients":[{"id":"${uuid}","alterId":0,"email":"${email}","limitIp":2,"totalGB":5368709120,"expiryTime":${expiryDate},"enable":true,"tgId":"","subId":""}]}` // Dynamically insert UUID, Email, and Expiry Time
         });
 
@@ -94,13 +94,13 @@ app.post('/generateConfig', async (req, res) => {
         };
 
         // Generate V2Ray config by adding a client on the x-ui panel
-        const generateResponse = await fetch("https://atc.oneshieldstore.shop:2053/panel/api/inbounds/addClient", requestOptions);
+        const generateResponse = await fetch("http://165.22.245.179:2053/panel/api/inbounds/addClient", requestOptions);
         const generateData = await generateResponse.json();
 
         console.log('Response from x-ui panel:', generateData); // Log the response data
 
         // Construct final V2Ray config URL with dynamic UUID and Email
-        const v2rayConfigURL = `vless://${uuid}@atc.oneshieldstore.shop:80?type=ws&path=%2F&security=none#${email}`;
+        const v2rayConfigURL = `vless://${uuid}@165.22.245.179:443?type=ws&path=%2F&security=none#${email}`;
         res.json({ config: v2rayConfigURL });
     } catch (error) {
         console.error('Error:', error.message); // Log the error message
